@@ -1,6 +1,8 @@
 #! /usr/local/bin/python
 
+import sys
 import unittest
+sys.path.append('../')
 from geometry import *
 
 class TestGeometry(unittest.TestCase):
