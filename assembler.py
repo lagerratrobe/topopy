@@ -2,8 +2,7 @@
 
 '''This is not so much a tool as a place to store some of the test geometry I want to work with.'''
 
-
-nodes = {
+node_dict = {
 1: (0, 30),
 2: (5, 33),
 3: (10, 35),
@@ -98,13 +97,13 @@ nodes = {
 92: (-3, 46)
 }
 
-# POLYGONS, MADE UP OF NODES
 polys = {
 'A': [1,2,44,45,46,47,48,49,56,57,58,59,60,39,40,41,42,43,1],
 'A2': [86,87,88,89,90,91,92,86],
-'B': [2,3,4,5,6,7,8,9,10,51,50,49,48,47,46,45,44,2],
+'B': [3,4,5,6,7,8,9,10,51,50,49,48,47,46,45,44,2,3],
 'C': [49,50,51,10,11,52,53,54,55,56,49],
-'D': [[58,57,56,55,61,62,63,64,71,72,73,74,27,75,76,77,78,32,33,34,35,36,37,38,39,60,59,58], [79,85,84,83,82,81,80,79]],
+'D': [[58,57,56,55,61,62,63,64,71,72,73,74,27,75,76,77,78,32,33,34,35,36,37,38,39,60,59,58],
+[79,85,84,83,82,81,80,79]],
 'E': [11,12,13,14,15,67,66,65,64,63,62,61,55,54,53,52,11],
 'F': [79,80,81,82,83,84,85,79],
 'G': [64,65,68,69,70,25,26,27,74,73,72,71,64],
@@ -112,16 +111,37 @@ polys = {
 'I': [32,78,77,76,75,27,28,29,30,31,32]
 }
 
-def MakeWKT(geom):
-  '''Pass in a polygon definition and get out a WKT representation of it'''
-  # CHECK TO SEE IF THIS IS A SIMPLE POLYGON
-  print len(geom)
-  
+
+def MakeWKT(polygon):
+  '''Takes an ordered list of nodes which represent the geometry of a linear_ring
+     NOTE: Only works for POLYGONS. MULTIPOLYGONS must be split ahead of time.'''
+  rings = []
+  # CHECK WHETHER SIMPLE POLYGON, OR HAS HOLES
+  holes = any(isinstance(ring, list) for ring in polygon) # EVALUATES TO TRUE IF LIST IN POLYGON
+  if not holes:
+    rings.append(polygon)
+  else:
+    for ring in polygon:
+      rings.append(ring)
+  polygon_ring_wkt = [] # STRING REPRESENTATIONS OF EACH RING
+  # UNWRAP EACH RING, GET THE COORDS FOR EACH NODE, APPEND COORDS TO WKT STRING
+  for ring in rings:
+    ring_coords = []
+    for node in ring:
+      (x, y) = node_dict[node]
+      coord_string = "%s %s" % (str(x), str(y))
+      ring_coords.append(coord_string)
+    ring_wkt = ', '.join(ring_coords)
+    polygon_ring_wkt.append(ring_wkt)
+  polygon_wkt = 'POLYGON ((%s))' % ('), ('.join(polygon_ring_wkt))
+  return polygon_wkt
 
 def main():
-  print nodes[2]
-  print polys['B']
-  poly_B_geom = MakeWKT(polys['B'])
+  for id in polys:
+    print "%s|%s" % (id, MakeWKT(polys[id]))
+
 
 if __name__ == '__main__':
   main()
+
+
